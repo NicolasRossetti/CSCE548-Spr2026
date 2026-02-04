@@ -1,0 +1,7 @@
+com\bazaar\dao\BazaarDAO.class
+com\bazaar\model\Note.class
+com\bazaar\model\Order.class
+com\bazaar\model\Trade.class
+com\bazaar\model\PriceSnapshot.class
+com\bazaar\model\Item.class
+com\bazaar\BazaarConsoleApp.class
