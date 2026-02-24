@@ -16,6 +16,44 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 
+/**
+ * Service Layer Console Test Client
+ *
+ * Purpose: Demonstrates full CRUD functionality of the Bazaar business service layer
+ *          through HTTP API calls to all 5 entities (Item, PriceSnapshot, Order, Trade, Note).
+ *
+ * Deployment Platforms:
+ *    - Local Development: Set BAZAAR_API_URL="http://localhost:8080/api"
+ *      Then run: mvn -q exec:java -Dexec.mainClass=com.bazaar.ServiceConsoleClient
+ *
+ *    - Railway Production: Set BAZAAR_API_URL="https://YOUR-RAILWAY-URL/api"
+ *      Then run same command above
+ *      (Auto-connects to Railway MySQL via BAZAAR_DB_URL environment variable)
+ *
+ * Environment Variable:
+ *    - BAZAAR_API_URL: Base URL for API endpoints (defaults to http://localhost:8080/api)
+ *      Examples:
+ *        Local:  http://localhost:8080/api
+ *        Railway: https://csce548-spr2026-production.up.railway.app/api
+ *
+ * Database Requirements:
+ *    - MySQL 8.0+ with schema initialized (items, price_snapshots, orders, trades, notes tables)
+ *    - If running against Railway: Schema must be initialized on Railway MySQL
+ *      See BazaarServiceApplication.java for Railway deployment steps
+ *
+ * Expected Output (Success):
+ *    === Service Layer Full CRUD Test ===
+ *    Base URL: [YOUR_API_URL]
+ *    [Create → Get → Update → Get → Delete → 404 verification]
+ *    === Full CRUD test complete ===
+ *
+ * HTTP Operations Tested:
+ *    - POST   /api/[entity]           → Create item (201 with ID)
+ *    - GET    /api/[entity]/{id}      → Retrieve item (200 with object)
+ *    - PUT    /api/[entity]/{id}      → Update item (204 No Content)
+ *    - DELETE /api/[entity]/{id}      → Delete item (204 No Content)
+ *    - GET    /api/[entity]/{id}      → Verify deleted (404 Not Found)
+ */
 public class ServiceConsoleClient {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
