@@ -24,7 +24,7 @@ public class BazaarConsoleApp {
         // Initialize DAO with database connection
         String url = "jdbc:mysql://localhost:3306/bazaar_tracker";
         String username = "root";  // Change this to your MySQL username
-        String password = "Nano2005Nina2007$";      // Change this to your MySQL password
+        String password = "password";      // Change this to your MySQL password
 
         dao = new BazaarDAO(url, username, password);
 

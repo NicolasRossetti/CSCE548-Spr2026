@@ -1,0 +1,49 @@
+package com.bazaar.api;
+
+import com.bazaar.business.BazaarBusinessService;
+import com.bazaar.model.Order;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    private final BazaarBusinessService businessService;
+
+    public OrderController(BazaarBusinessService businessService) {
+        this.businessService = businessService;
+    }
+
+    @PostMapping
+    public ResponseEntity<IdResponse> create(@RequestBody Order order) {
+        int id = businessService.addOrder(order);
+        return ResponseEntity.ok(new IdResponse(id));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Order> getById(@PathVariable int id) {
+        Order order = businessService.findOrderById(id);
+        return order == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(order);
+    }
+
+    @GetMapping
+    public List<Order> getAll() {
+        return businessService.findAllOrders();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable int id, @RequestBody Order order) {
+        order.setOrderId(id);
+        boolean updated = businessService.modifyOrder(order);
+        return updated ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        boolean deleted = businessService.removeOrder(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+}
