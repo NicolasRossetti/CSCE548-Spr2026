@@ -1,9 +1,31 @@
 package com.bazaar.dao;
 
-import com.bazaar.model.*;
-import java.sql.*;
+import javaasqloConnectionn;
+import java.sql.DriverManagerriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import com.bazaar.model.Item;
+import com.bazaar.model.Note;
+import com.bazaar.model.Order;
+import com.bazaar.model.PriceSnapshot;
+import com.bazaar.model.Trade;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.bazaar.model.Item;
+import com.bazaar.model.Note;
+import com.bazaar.model.Order;
+import com.bazaar.model.PriceSnapshot;
+import com.bazaar.model.Trade;
 
 public class BazaarDAO {
     private final String url;
@@ -63,6 +85,21 @@ public class BazaarDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 items.add(mapItem(rs));
+            }
+        }
+        return items;
+    }
+
+    public List<Item> readAllItemsLimited(int limit) throws SQLException {
+        String sql = "SELECT * FROM items LIMIT ?";
+        List<Item> items = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    items.add(mapItem(rs));
+                }
             }
         }
         return items;
@@ -135,6 +172,21 @@ public class BazaarDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 snapshots.add(mapPriceSnapshot(rs));
+            }
+        }
+        return snapshots;
+    }
+
+    public List<PriceSnapshot> readAllPriceSnapshotsLimited(int limit) throws SQLException {
+        String sql = "SELECT * FROM price_snapshots LIMIT ?";
+        List<PriceSnapshot> snapshots = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    snapshots.add(mapPriceSnapshot(rs));
+                }
             }
         }
         return snapshots;
@@ -214,6 +266,21 @@ public class BazaarDAO {
         return orders;
     }
 
+    public List<Order> readAllOrdersLimited(int limit) throws SQLException {
+        String sql = "SELECT * FROM orders LIMIT ?";
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    orders.add(mapOrder(rs));
+                }
+            }
+        }
+        return orders;
+    }
+
     public boolean updateOrder(Order order) throws SQLException {
         String sql = "UPDATE orders SET item_id = ?, order_type = ?, quantity = ?, target_price = ?, status = ?, created_at = ? WHERE order_id = ?";
         try (Connection conn = getConnection();
@@ -288,6 +355,21 @@ public class BazaarDAO {
         return trades;
     }
 
+    public List<Trade> readAllTradesLimited(int limit) throws SQLException {
+        String sql = "SELECT * FROM trades LIMIT ?";
+        List<Trade> trades = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    trades.add(mapTrade(rs));
+                }
+            }
+        }
+        return trades;
+    }
+
     public boolean updateTrade(Trade trade) throws SQLException {
         String sql = "UPDATE trades SET order_id = ?, qty_filled = ?, fill_price = ?, fee = ?, profit = ?, trade_time = ? WHERE trade_id = ?";
         try (Connection conn = getConnection();
@@ -354,6 +436,21 @@ public class BazaarDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 notes.add(mapNote(rs));
+            }
+        }
+        return notes;
+    }
+
+    public List<Note> readAllNotesLimited(int limit) throws SQLException {
+        String sql = "SELECT * FROM notes LIMIT ?";
+        List<Note> notes = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    notes.add(mapNote(rs));
+                }
             }
         }
         return notes;

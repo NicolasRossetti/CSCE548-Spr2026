@@ -1,15 +1,16 @@
 package com.bazaar.business;
 
+import java.sql.SQLException;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.bazaar.dao.BazaarDAO;
 import com.bazaar.model.Item;
 import com.bazaar.model.Note;
 import com.bazaar.model.Order;
 import com.bazaar.model.PriceSnapshot;
 import com.bazaar.model.Trade;
-import org.springframework.stereotype.Service;
-
-import java.sql.SQLException;
-import java.util.List;
 
 @Service
 public class BazaarBusinessServiceImpl implements BazaarBusinessService {
@@ -33,6 +34,11 @@ public class BazaarBusinessServiceImpl implements BazaarBusinessService {
     @Override
     public List<Item> findAllItems() {
         return runSql(dao::readAllItems);
+    }
+
+    @Override
+    public List<Item> findAllItemsLimited(int limit) {
+        return runSql(() -> dao.readAllItemsLimited(limit));
     }
 
     @Override
@@ -61,6 +67,11 @@ public class BazaarBusinessServiceImpl implements BazaarBusinessService {
     }
 
     @Override
+    public List<PriceSnapshot> findAllPriceSnapshotsLimited(int limit) {
+        return runSql(() -> dao.readAllPriceSnapshotsLimited(limit));
+    }
+
+    @Override
     public boolean modifyPriceSnapshot(PriceSnapshot snapshot) {
         return runSql(() -> dao.updatePriceSnapshot(snapshot));
     }
@@ -83,6 +94,11 @@ public class BazaarBusinessServiceImpl implements BazaarBusinessService {
     @Override
     public List<Order> findAllOrders() {
         return runSql(dao::readAllOrders);
+    }
+
+    @Override
+    public List<Order> findAllOrdersLimited(int limit) {
+        return runSql(() -> dao.readAllOrdersLimited(limit));
     }
 
     @Override
@@ -111,6 +127,11 @@ public class BazaarBusinessServiceImpl implements BazaarBusinessService {
     }
 
     @Override
+    public List<Trade> findAllTradesLimited(int limit) {
+        return runSql(() -> dao.readAllTradesLimited(limit));
+    }
+
+    @Override
     public boolean modifyTrade(Trade trade) {
         return runSql(() -> dao.updateTrade(trade));
     }
@@ -136,6 +157,11 @@ public class BazaarBusinessServiceImpl implements BazaarBusinessService {
     }
 
     @Override
+    public List<Note> findAllNotesLimited(int limit) {
+        return runSql(() -> dao.readAllNotesLimited(limit));
+    }
+
+    @Override
     public boolean modifyNote(Note note) {
         return runSql(() -> dao.updateNote(note));
     }
@@ -149,7 +175,7 @@ public class BazaarBusinessServiceImpl implements BazaarBusinessService {
         try {
             return supplier.get();
         } catch (SQLException e) {
-            throw new IllegalStateException("Database operation failed", e);
+            throw new DatabaseOperationException("Database operation failed", e);
         }
     }
 

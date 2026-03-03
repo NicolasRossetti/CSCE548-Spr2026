@@ -1,20 +1,28 @@
 package com.bazaar;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
+
 import com.bazaar.api.IdResponse;
 import com.bazaar.model.Item;
 import com.bazaar.model.Note;
 import com.bazaar.model.Order;
 import com.bazaar.model.PriceSnapshot;
 import com.bazaar.model.Trade;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.LocalDateTime;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 // Service Layer Console Test Client
 // Tests all 5 entities (Item, PriceSnapshot, Order, Trade, Note) with full CRUD operations
@@ -22,7 +30,9 @@ import java.time.LocalDateTime;
 // Default: http://localhost:8080/api (local), or https://YOUR-RAILWAY-URL/api (Railway)
 public class ServiceConsoleClient {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .create();
 
     public static void main(String[] args) throws Exception {
         String baseUrl = System.getenv().getOrDefault("BAZAAR_API_URL", "http://localhost:8080/api");
@@ -138,7 +148,7 @@ public class ServiceConsoleClient {
     }
 
     private static int createItem(HttpClient client, String baseUrl, Item item) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(item);
+        String json = GSON.toJson(item);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/items"))
                 .header("Content-Type", "application/json")
@@ -147,7 +157,7 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Create item failed");
-        IdResponse idResponse = OBJECT_MAPPER.readValue(response.body(), IdResponse.class);
+        IdResponse idResponse = GSON.fromJson(response.body(), IdResponse.class);
         return idResponse.getId();
     }
 
@@ -159,7 +169,7 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Get item failed");
-        return OBJECT_MAPPER.readValue(response.body(), Item.class);
+        return GSON.fromJson(response.body(), Item.class);
     }
 
     private static int getStatus(HttpClient client, String url) throws IOException, InterruptedException {
@@ -173,7 +183,7 @@ public class ServiceConsoleClient {
     }
 
     private static void updateItem(HttpClient client, String baseUrl, Item item) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(item);
+        String json = GSON.toJson(item);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/items/" + item.getItemId()))
                 .header("Content-Type", "application/json")
@@ -195,7 +205,7 @@ public class ServiceConsoleClient {
     }
 
     private static int createPriceSnapshot(HttpClient client, String baseUrl, PriceSnapshot snapshot) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(snapshot);
+        String json = GSON.toJson(snapshot);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/price-snapshots"))
                 .header("Content-Type", "application/json")
@@ -204,7 +214,7 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Create price snapshot failed");
-        return OBJECT_MAPPER.readValue(response.body(), IdResponse.class).getId();
+        return GSON.fromJson(response.body(), IdResponse.class).getId();
     }
 
     private static PriceSnapshot getPriceSnapshot(HttpClient client, String baseUrl, int snapshotId) throws IOException, InterruptedException {
@@ -215,11 +225,11 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Get price snapshot failed");
-        return OBJECT_MAPPER.readValue(response.body(), PriceSnapshot.class);
+        return GSON.fromJson(response.body(), PriceSnapshot.class);
     }
 
     private static void updatePriceSnapshot(HttpClient client, String baseUrl, PriceSnapshot snapshot) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(snapshot);
+        String json = GSON.toJson(snapshot);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/price-snapshots/" + snapshot.getSnapshotId()))
                 .header("Content-Type", "application/json")
@@ -241,7 +251,7 @@ public class ServiceConsoleClient {
     }
 
     private static int createOrder(HttpClient client, String baseUrl, Order order) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(order);
+        String json = GSON.toJson(order);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/orders"))
                 .header("Content-Type", "application/json")
@@ -250,7 +260,7 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Create order failed");
-        return OBJECT_MAPPER.readValue(response.body(), IdResponse.class).getId();
+        return GSON.fromJson(response.body(), IdResponse.class).getId();
     }
 
     private static Order getOrder(HttpClient client, String baseUrl, int orderId) throws IOException, InterruptedException {
@@ -261,11 +271,11 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Get order failed");
-        return OBJECT_MAPPER.readValue(response.body(), Order.class);
+        return GSON.fromJson(response.body(), Order.class);
     }
 
     private static void updateOrder(HttpClient client, String baseUrl, Order order) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(order);
+        String json = GSON.toJson(order);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/orders/" + order.getOrderId()))
                 .header("Content-Type", "application/json")
@@ -287,7 +297,7 @@ public class ServiceConsoleClient {
     }
 
     private static int createTrade(HttpClient client, String baseUrl, Trade trade) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(trade);
+        String json = GSON.toJson(trade);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/trades"))
                 .header("Content-Type", "application/json")
@@ -296,7 +306,7 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Create trade failed");
-        return OBJECT_MAPPER.readValue(response.body(), IdResponse.class).getId();
+        return GSON.fromJson(response.body(), IdResponse.class).getId();
     }
 
     private static Trade getTrade(HttpClient client, String baseUrl, int tradeId) throws IOException, InterruptedException {
@@ -307,11 +317,11 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Get trade failed");
-        return OBJECT_MAPPER.readValue(response.body(), Trade.class);
+        return GSON.fromJson(response.body(), Trade.class);
     }
 
     private static void updateTrade(HttpClient client, String baseUrl, Trade trade) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(trade);
+        String json = GSON.toJson(trade);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/trades/" + trade.getTradeId()))
                 .header("Content-Type", "application/json")
@@ -333,7 +343,7 @@ public class ServiceConsoleClient {
     }
 
     private static int createNote(HttpClient client, String baseUrl, Note note) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(note);
+        String json = GSON.toJson(note);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/notes"))
                 .header("Content-Type", "application/json")
@@ -342,7 +352,7 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Create note failed");
-        return OBJECT_MAPPER.readValue(response.body(), IdResponse.class).getId();
+        return GSON.fromJson(response.body(), IdResponse.class).getId();
     }
 
     private static Note getNote(HttpClient client, String baseUrl, int noteId) throws IOException, InterruptedException {
@@ -353,11 +363,11 @@ public class ServiceConsoleClient {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         ensureStatus(response, 200, "Get note failed");
-        return OBJECT_MAPPER.readValue(response.body(), Note.class);
+        return GSON.fromJson(response.body(), Note.class);
     }
 
     private static void updateNote(HttpClient client, String baseUrl, Note note) throws IOException, InterruptedException {
-        String json = OBJECT_MAPPER.writeValueAsString(note);
+        String json = GSON.toJson(note);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/notes/" + note.getNoteId()))
                 .header("Content-Type", "application/json")
@@ -381,6 +391,18 @@ public class ServiceConsoleClient {
     private static void ensureStatus(HttpResponse<String> response, int expectedStatus, String errorMessage) {
         if (response.statusCode() != expectedStatus) {
             throw new IllegalStateException(errorMessage + ". HTTP " + response.statusCode() + ": " + response.body());
+        }
+    }
+
+    private static final class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+        @Override
+        public JsonElement serialize(LocalDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(src.toString());
+        }
+
+        @Override
+        public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return LocalDateTime.parse(json.getAsString());
         }
     }
 }

@@ -23,6 +23,7 @@ Each entity has full CRUD endpoints:
    - `POST /api/items`
    - `GET /api/items/{id}`
    - `GET /api/items`
+   - `GET /api/items?limit={n}` (subset)
    - `PUT /api/items/{id}`
    - `DELETE /api/items/{id}`
 
@@ -30,6 +31,7 @@ Each entity has full CRUD endpoints:
    - `POST /api/price-snapshots`
    - `GET /api/price-snapshots/{id}`
    - `GET /api/price-snapshots`
+   - `GET /api/price-snapshots?limit={n}` (subset)
    - `PUT /api/price-snapshots/{id}`
    - `DELETE /api/price-snapshots/{id}`
 
@@ -37,6 +39,7 @@ Each entity has full CRUD endpoints:
    - `POST /api/orders`
    - `GET /api/orders/{id}`
    - `GET /api/orders`
+   - `GET /api/orders?limit={n}` (subset)
    - `PUT /api/orders/{id}`
    - `DELETE /api/orders/{id}`
 
@@ -44,6 +47,7 @@ Each entity has full CRUD endpoints:
    - `POST /api/trades`
    - `GET /api/trades/{id}`
    - `GET /api/trades`
+   - `GET /api/trades?limit={n}` (subset)
    - `PUT /api/trades/{id}`
    - `DELETE /api/trades/{id}`
 
@@ -51,6 +55,7 @@ Each entity has full CRUD endpoints:
    - `POST /api/notes`
    - `GET /api/notes/{id}`
    - `GET /api/notes`
+   - `GET /api/notes?limit={n}` (subset)
    - `PUT /api/notes/{id}`
    - `DELETE /api/notes/{id}`
 
@@ -79,6 +84,25 @@ mvn spring-boot:run
 ```
 
 Service base URL (local): `http://localhost:8080`
+
+### 4) Run the web client (React)
+
+From a second terminal:
+
+```powershell
+cd client
+npm install
+npm run dev
+```
+
+Web client URL (local): `http://localhost:5173`
+
+The page includes 5 sections/tabs (Items, Price Snapshots, Orders, Trades, Notes) and supports:
+- `GET all`
+- `GET by id`
+- `GET subset` via `?limit=`
+
+Use **Run All Required GET Calls** in the UI to automatically execute required GET calls for all tables.
 
 ## Console Front End Test
 
@@ -144,17 +168,18 @@ Hosting comments are also embedded in:
 
 Capture screenshots for the following:
 
-1. Spring service startup logs (`mvn spring-boot:run` or Railway logs)
-2. `POST /api/items` success response
-3. `GET /api/items/{id}` showing inserted row
-4. `PUT /api/items/{id}` success response
-5. `GET /api/items/{id}` showing updated row
-6. `DELETE /api/items/{id}` success response
-7. `GET /api/items/{id}` showing `404`
-8. Console client output from `ServiceConsoleClient`
-9. Database query proving data retrieval/update/delete effects
+1. Spring service startup logs (`mvn spring-boot:run`)
+2. React client running at `http://localhost:5173`
+3. Click on **Run All Required GET Calls** and capture the **Run-All Execution Log** proving:
+   - Items: `GET /api/items`, `GET /api/items/{id}`, `GET /api/items?limit=2`
+   - Price Snapshots: `GET /api/price-snapshots`, `GET /api/price-snapshots/{id}`, `GET /api/price-snapshots?limit=2`
+   - Orders: `GET /api/orders`, `GET /api/orders/{id}`, `GET /api/orders?limit=2`
+   - Trades: `GET /api/trades`, `GET /api/trades/{id}`, `GET /api/trades?limit=2`
+   - Notes: `GET /api/notes`, `GET /api/notes/{id}`, `GET /api/notes?limit=2`
+4. At least one screenshot per tab showing returned JSON data in the output panel.
 
 ## Notes
 
 - Existing Project 1 DAO and model classes were reused.
-- The older console app (`BazaarConsoleApp`) remains in the project, but Project 2 testing should use the REST service and `ServiceConsoleClient`.
+- The older console app (`BazaarConsoleApp`) remains in the project.
+- For this assignment version, the React website client in `client/` is the recommended proof for service-layer GET functionality.
