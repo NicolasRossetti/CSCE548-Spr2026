@@ -1,4 +1,4 @@
-# CSCE548 Project 2: Business + Service Layer
+# Bazaar Tracker
 
 This project now includes:
 - A **data layer** (`BazaarDAO`) from Project 1
@@ -102,7 +102,7 @@ The page includes 5 sections/tabs (Items, Price Snapshots, Orders, Trades, Notes
 - `GET by id`
 - `GET subset` via `?limit=`
 
-Use **Run All Required GET Calls** in the UI to automatically execute required GET calls for all tables.
+Use **Run All Required GET Calls** in the UI to automatically execute all GET calls for all tables.
 
 ## Console Front End Test
 
@@ -121,12 +121,12 @@ This executes complete CRUD workflows against the API for:
 
 For each entity, it performs create, get, update, get, delete, and then verifies `404` after delete.
 
-## Console-Based Front End (Assignment Requirement)
+## Console-Based Front End
 
 The console front end is implemented in:
 - `src/main/java/com/bazaar/ServiceConsoleClient.java`
 
-This program invokes the service layer over HTTP and performs the required proof flow across all services:
+This program invokes the service layer over HTTP and performs a complete verification flow across all services:
 1. Insert object
 2. Get object
 3. Update object
@@ -146,7 +146,7 @@ If your service is hosted on Railway, set:
 $env:BAZAAR_API_URL="https://your-railway-url"
 ```
 
-## Railway Hosting (Required for assignment)
+## Railway Hosting
 
 Platform selected: **Railway**
 
@@ -170,7 +170,7 @@ Capture screenshots for the following:
 
 1. Spring service startup logs (`mvn spring-boot:run`)
 2. React client running at `http://localhost:5173`
-3. Click on **Run All Required GET Calls** and capture the **Run-All Execution Log** proving:
+3. Click on **Run All Required GET Calls** and capture the **Run-All Execution Log** showing:
    - Items: `GET /api/items`, `GET /api/items/{id}`, `GET /api/items?limit=2`
    - Price Snapshots: `GET /api/price-snapshots`, `GET /api/price-snapshots/{id}`, `GET /api/price-snapshots?limit=2`
    - Orders: `GET /api/orders`, `GET /api/orders/{id}`, `GET /api/orders?limit=2`
@@ -182,4 +182,4 @@ Capture screenshots for the following:
 
 - Existing Project 1 DAO and model classes were reused.
 - The older console app (`BazaarConsoleApp`) remains in the project.
-- For this assignment version, the React website client in `client/` is the recommended proof for service-layer GET functionality.
+- The React website client in `client/` provides a simple interface for validating service-layer GET functionality.
