@@ -1,20 +1,9 @@
 package com.bazaar.dao;
 
-import javaasqloConnectionn;
-import java.sql.DriverManagerriverManager;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import com.bazaar.model.Item;
-import com.bazaar.model.Note;
-import com.bazaar.model.Order;
-import com.bazaar.model.PriceSnapshot;
-import com.bazaar.model.Trade;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;

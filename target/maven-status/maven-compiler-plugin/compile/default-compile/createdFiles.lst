@@ -11,6 +11,7 @@ com\bazaar\business\BazaarBusinessServiceImpl$SqlSupplier.class
 com\bazaar\api\PriceSnapshotController.class
 com\bazaar\api\NoteController.class
 com\bazaar\model\PriceSnapshot.class
+com\bazaar\config\GsonConfig.class
 com\bazaar\dao\BazaarDAO.class
 com\bazaar\config\BazaarDaoConfig.class
 com\bazaar\api\IdResponse.class
@@ -18,5 +19,6 @@ com\bazaar\business\BazaarBusinessServiceImpl.class
 com\bazaar\api\ItemController.class
 com\bazaar\BazaarConsoleApp.class
 com\bazaar\business\DatabaseOperationException.class
+com\bazaar\ServiceConsoleClient$LocalDateTimeAdapter.class
 com\bazaar\api\ApiExceptionHandler.class
 com\bazaar\ServiceConsoleClient.class
