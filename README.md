@@ -201,3 +201,6 @@ CSCE548-Spr2026/
 │   └── model/                   # Entity model classes
 └── pom.xml                      # Maven build file
 ```
+## Author
+
+Nicolas Rossetti: @NicolasRossetti
