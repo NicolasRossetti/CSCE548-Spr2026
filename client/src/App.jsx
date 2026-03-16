@@ -13,6 +13,12 @@ const ENTITY_CONFIG = [
       { key: 'category', label: 'Category', format: 'title' },
       { key: 'rarity', label: 'Rarity', format: 'title' },
       { key: 'npcSellPrice', label: 'NPC Sell Price', format: 'currency' }
+    ],
+    formFields: [
+      { key: 'name', label: 'Name', type: 'text', placeholder: 'e.g. Iron Sword' },
+      { key: 'category', label: 'Category', type: 'text', placeholder: 'e.g. WEAPON' },
+      { key: 'rarity', label: 'Rarity', type: 'text', placeholder: 'e.g. COMMON' },
+      { key: 'npcSellPrice', label: 'NPC Sell Price', type: 'number', step: '0.01', placeholder: '0.00' }
     ]
   },
   {
@@ -29,6 +35,14 @@ const ENTITY_CONFIG = [
       { key: 'buyVolume', label: 'Buy Volume', format: 'number' },
       { key: 'sellVolume', label: 'Sell Volume', format: 'number' },
       { key: 'snapshotTime', label: 'Snapshot Time', format: 'datetime' }
+    ],
+    formFields: [
+      { key: 'itemId', label: 'Item ID', type: 'number', placeholder: '1' },
+      { key: 'buyPrice', label: 'Buy Price', type: 'number', step: '0.01', placeholder: '0.00' },
+      { key: 'sellPrice', label: 'Sell Price', type: 'number', step: '0.01', placeholder: '0.00' },
+      { key: 'buyVolume', label: 'Buy Volume', type: 'number', placeholder: '0' },
+      { key: 'sellVolume', label: 'Sell Volume', type: 'number', placeholder: '0' },
+      { key: 'snapshotTime', label: 'Snapshot Time', type: 'datetime-local', placeholder: '' }
     ]
   },
   {
@@ -45,6 +59,14 @@ const ENTITY_CONFIG = [
       { key: 'targetPrice', label: 'Target Price', format: 'currency' },
       { key: 'status', label: 'Status', format: 'title' },
       { key: 'createdAt', label: 'Created At', format: 'datetime' }
+    ],
+    formFields: [
+      { key: 'itemId', label: 'Item ID', type: 'number', placeholder: '1' },
+      { key: 'orderType', label: 'Order Type', type: 'text', placeholder: 'BUY or SELL' },
+      { key: 'quantity', label: 'Quantity', type: 'number', placeholder: '1' },
+      { key: 'targetPrice', label: 'Target Price', type: 'number', step: '0.01', placeholder: '0.00' },
+      { key: 'status', label: 'Status', type: 'text', placeholder: 'OPEN' },
+      { key: 'createdAt', label: 'Created At', type: 'datetime-local', placeholder: '' }
     ]
   },
   {
@@ -61,6 +83,14 @@ const ENTITY_CONFIG = [
       { key: 'fee', label: 'Fee', format: 'currency' },
       { key: 'profit', label: 'Profit', format: 'currency' },
       { key: 'tradeTime', label: 'Trade Time', format: 'datetime' }
+    ],
+    formFields: [
+      { key: 'orderId', label: 'Order ID', type: 'number', placeholder: '1' },
+      { key: 'qtyFilled', label: 'Qty Filled', type: 'number', placeholder: '0' },
+      { key: 'fillPrice', label: 'Fill Price', type: 'number', step: '0.01', placeholder: '0.00' },
+      { key: 'fee', label: 'Fee', type: 'number', step: '0.01', placeholder: '0.00' },
+      { key: 'profit', label: 'Profit', type: 'number', step: '0.01', placeholder: '0.00' },
+      { key: 'tradeTime', label: 'Trade Time', type: 'datetime-local', placeholder: '' }
     ]
   },
   {
@@ -74,6 +104,10 @@ const ENTITY_CONFIG = [
       { key: 'itemId', label: 'Item ID', format: 'number' },
       { key: 'noteText', label: 'Note' },
       { key: 'createdAt', label: 'Created At', format: 'datetime' }
+    ],
+    formFields: [
+      { key: 'itemId', label: 'Item ID', type: 'number', placeholder: '1' },
+      { key: 'noteText', label: 'Note Text', type: 'text', placeholder: 'Enter note text here.' }
     ]
   }
 ];
@@ -192,6 +226,7 @@ function App() {
   const [idInputs, setIdInputs] = useState({});
   const [subsetLimits, setSubsetLimits] = useState({});
   const [runAllLog, setRunAllLog] = useState([]);
+  const [formInputs, setFormInputs] = useState({});
 
   const activeEntity = useMemo(
     () => ENTITY_CONFIG.find((entity) => entity.key === activeTab),
@@ -339,6 +374,82 @@ function App() {
     setStatus('Finished the required GET checklist for all sections.');
   }
 
+  function buildBody(entity) {
+    const values = formInputs[entity.key] ?? {};
+    const body = {};
+    for (const field of entity.formFields) {
+      const raw = values[field.key];
+      if (raw === undefined || raw === '') continue;
+      if (field.type === 'number') {
+        body[field.key] = Number(raw);
+      } else if (field.type === 'datetime-local') {
+        body[field.key] = raw.length === 16 ? `${raw}:00` : raw;
+      } else {
+        body[field.key] = raw;
+      }
+    }
+    return body;
+  }
+
+  async function createRecord(entity) {
+    const body = buildBody(entity);
+    setStatus(`Creating new ${entity.singularLabel.toLowerCase()}...`);
+    try {
+      const response = await fetch(`${baseUrl}${entity.path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      let data = null;
+      try { data = await response.json(); } catch { /* no body */ }
+      if (!response.ok) {
+        const message = data && typeof data === 'object' && 'message' in data
+          ? data.message
+          : response.statusText || 'Request failed';
+        throw new Error(`${response.status}: ${message}`);
+      }
+      const newId = data?.id ?? '?';
+      setStatus(`Created ${entity.singularLabel.toLowerCase()} (ID: ${newId}). Refreshing list...`);
+      await getAll(entity);
+    } catch (error) {
+      setStatus(`Could not create ${entity.singularLabel.toLowerCase()}: ${error.message}`);
+    }
+  }
+
+  async function updateRecord(entity) {
+    const rawId = idInputs[entity.key];
+    const id = Number(rawId);
+    if (!Number.isInteger(id) || id < 1) {
+      setStatus(`Please enter a valid ${entity.singularLabel.toLowerCase()} ID in the “${entity.singularLabel} ID” field above before updating.`);
+      return;
+    }
+    const body = buildBody(entity);
+    if (Object.keys(body).length === 0) {
+      setStatus('Please fill in at least one field before updating.');
+      return;
+    }
+    setStatus(`Updating ${entity.singularLabel.toLowerCase()} ID ${id}...`);
+    try {
+      const response = await fetch(`${baseUrl}${entity.path}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!response.ok) {
+        let data = null;
+        try { data = await response.json(); } catch { /* no body */ }
+        const message = data && typeof data === 'object' && 'message' in data
+          ? data.message
+          : response.statusText || 'Request failed';
+        throw new Error(`${response.status}: ${message}`);
+      }
+      setStatus(`Updated ${entity.singularLabel.toLowerCase()} ID ${id}. Reloading record...`);
+      await getById(entity, id);
+    } catch (error) {
+      setStatus(`Could not update ${entity.singularLabel.toLowerCase()}: ${error.message}`);
+    }
+  }
+
   const entityOutput = output[activeEntity.key];
 
   return (
@@ -418,6 +529,59 @@ function App() {
           </label>
           <button onClick={() => getSubset(activeEntity)}>Load Subset</button>
         </div>
+
+        <details className="write-section">
+          <summary>Create New {activeEntity.singularLabel}</summary>
+          <div className="form-fields">
+            {activeEntity.formFields.map((field) => (
+              <label key={field.key} className="field" htmlFor={`create-${activeEntity.key}-${field.key}`}>
+                <span>{field.label}</span>
+                <input
+                  id={`create-${activeEntity.key}-${field.key}`}
+                  type={field.type}
+                  step={field.step}
+                  placeholder={field.placeholder}
+                  value={formInputs[activeEntity.key]?.[field.key] ?? ''}
+                  onChange={(e) => setFormInputs((prev) => ({
+                    ...prev,
+                    [activeEntity.key]: { ...(prev[activeEntity.key] ?? {}), [field.key]: e.target.value }
+                  }))}
+                />
+              </label>
+            ))}
+            <button className="primary" onClick={() => createRecord(activeEntity)}>
+              Create {activeEntity.singularLabel}
+            </button>
+          </div>
+        </details>
+
+        <details className="write-section">
+          <summary>Update {activeEntity.singularLabel} by ID</summary>
+          <p className="hint write-section-hint">
+            Enter the {activeEntity.singularLabel} ID in the &ldquo;{activeEntity.singularLabel} ID&rdquo; field above, then fill in the new values below.
+          </p>
+          <div className="form-fields">
+            {activeEntity.formFields.map((field) => (
+              <label key={field.key} className="field" htmlFor={`update-${activeEntity.key}-${field.key}`}>
+                <span>{field.label}</span>
+                <input
+                  id={`update-${activeEntity.key}-${field.key}`}
+                  type={field.type}
+                  step={field.step}
+                  placeholder={field.placeholder}
+                  value={formInputs[activeEntity.key]?.[field.key] ?? ''}
+                  onChange={(e) => setFormInputs((prev) => ({
+                    ...prev,
+                    [activeEntity.key]: { ...(prev[activeEntity.key] ?? {}), [field.key]: e.target.value }
+                  }))}
+                />
+              </label>
+            ))}
+            <button className="primary" onClick={() => updateRecord(activeEntity)}>
+              Update {activeEntity.singularLabel}
+            </button>
+          </div>
+        </details>
 
         <p className="result-summary">{getSummaryText(activeEntity, entityOutput)}</p>
 
