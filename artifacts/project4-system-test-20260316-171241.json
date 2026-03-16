@@ -1,0 +1,164 @@
+{
+  "generatedAt": "2026-03-16T17:12:45.6525352-04:00",
+  "baseUrl": "https://csce548-spr2026-production.up.railway.app/api",
+  "skipDelete": false,
+  "ids": {
+    "itemId": 2,
+    "snapshotId": 2,
+    "orderId": 2,
+    "tradeId": 2,
+    "noteId": 2
+  },
+  "steps": [
+    {
+      "step": "Create Item",
+      "result": "PASS",
+      "details": "itemId=2"
+    },
+    {
+      "step": "Get Item By ID",
+      "result": "PASS",
+      "details": "itemId=2"
+    },
+    {
+      "step": "Update Item",
+      "result": "PASS",
+      "details": "itemId=2"
+    },
+    {
+      "step": "Get Updated Item",
+      "result": "PASS",
+      "details": "itemId=2"
+    },
+    {
+      "step": "Create Price Snapshot",
+      "result": "PASS",
+      "details": "snapshotId=2"
+    },
+    {
+      "step": "Get Price Snapshot By ID",
+      "result": "PASS",
+      "details": "snapshotId=2"
+    },
+    {
+      "step": "Update Price Snapshot",
+      "result": "PASS",
+      "details": "snapshotId=2"
+    },
+    {
+      "step": "Get Updated Price Snapshot",
+      "result": "PASS",
+      "details": "snapshotId=2"
+    },
+    {
+      "step": "Create Order",
+      "result": "PASS",
+      "details": "orderId=2"
+    },
+    {
+      "step": "Get Order By ID",
+      "result": "PASS",
+      "details": "orderId=2"
+    },
+    {
+      "step": "Update Order",
+      "result": "PASS",
+      "details": "orderId=2"
+    },
+    {
+      "step": "Get Updated Order",
+      "result": "PASS",
+      "details": "orderId=2"
+    },
+    {
+      "step": "Create Trade",
+      "result": "PASS",
+      "details": "tradeId=2"
+    },
+    {
+      "step": "Get Trade By ID",
+      "result": "PASS",
+      "details": "tradeId=2"
+    },
+    {
+      "step": "Update Trade",
+      "result": "PASS",
+      "details": "tradeId=2"
+    },
+    {
+      "step": "Get Updated Trade",
+      "result": "PASS",
+      "details": "tradeId=2"
+    },
+    {
+      "step": "Create Note",
+      "result": "PASS",
+      "details": "noteId=2"
+    },
+    {
+      "step": "Get Note By ID",
+      "result": "PASS",
+      "details": "noteId=2"
+    },
+    {
+      "step": "Update Note",
+      "result": "PASS",
+      "details": "noteId=2"
+    },
+    {
+      "step": "Get Updated Note",
+      "result": "PASS",
+      "details": "noteId=2"
+    },
+    {
+      "step": "Delete Note",
+      "result": "PASS",
+      "details": "noteId=2"
+    },
+    {
+      "step": "Get Note After Delete",
+      "result": "PASS",
+      "details": "expected404=true"
+    },
+    {
+      "step": "Delete Trade",
+      "result": "PASS",
+      "details": "tradeId=2"
+    },
+    {
+      "step": "Get Trade After Delete",
+      "result": "PASS",
+      "details": "expected404=true"
+    },
+    {
+      "step": "Delete Order",
+      "result": "PASS",
+      "details": "orderId=2"
+    },
+    {
+      "step": "Get Order After Delete",
+      "result": "PASS",
+      "details": "expected404=true"
+    },
+    {
+      "step": "Delete Price Snapshot",
+      "result": "PASS",
+      "details": "snapshotId=2"
+    },
+    {
+      "step": "Get Price Snapshot After Delete",
+      "result": "PASS",
+      "details": "expected404=true"
+    },
+    {
+      "step": "Delete Item",
+      "result": "PASS",
+      "details": "itemId=2"
+    },
+    {
+      "step": "Get Item After Delete",
+      "result": "PASS",
+      "details": "expected404=true"
+    }
+  ]
+}

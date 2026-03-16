@@ -1,5 +1,69 @@
 import React, { useMemo, useState } from 'react';
 
+function normalizeBaseUrl(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/\/api$/i, '');
+}
+
+function parseConnectionInput(value) {
+  const trimmed = String(value ?? '').trim();
+
+  if (!trimmed) {
+    return {
+      isValid: false,
+      message: 'Enter a local port such as 8080, or a full http/https URL such as https://your-service.up.railway.app.'
+    };
+  }
+
+  if (/^\d+$/.test(trimmed)) {
+    const parsedPort = Number(trimmed);
+    if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+      return {
+        isValid: false,
+        message: 'Please enter a valid port number between 1 and 65535.'
+      };
+    }
+
+    return {
+      isValid: true,
+      baseUrl: `http://localhost:${parsedPort}`
+    };
+  }
+
+  try {
+    const parsedUrl = new URL(trimmed);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return {
+        isValid: false,
+        message: 'Only http and https URLs are supported.'
+      };
+    }
+
+    return {
+      isValid: true,
+      baseUrl: normalizeBaseUrl(trimmed)
+    };
+  } catch {
+    return {
+      isValid: false,
+      message: 'Enter a local port such as 8080, or a full http/https URL such as https://your-service.up.railway.app.'
+    };
+  }
+}
+
+function describeConnection(baseUrl) {
+  const match = /^http:\/\/localhost:(\d+)$/i.exec(baseUrl);
+  if (match) {
+    return `Local service on port ${match[1]}`;
+  }
+
+  return baseUrl;
+}
+
+const DEFAULT_API_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');
+
 const ENTITY_CONFIG = [
   {
     key: 'items',
@@ -217,8 +281,8 @@ function getSummaryText(entity, result) {
 }
 
 function App() {
-  const [servicePort, setServicePort] = useState('8080');
-  const [portDraft, setPortDraft] = useState('8080');
+  const [baseUrl, setBaseUrl] = useState(DEFAULT_API_BASE_URL);
+  const [connectionDraft, setConnectionDraft] = useState(DEFAULT_API_BASE_URL);
   const [showConnectionSettings, setShowConnectionSettings] = useState(false);
   const [activeTab, setActiveTab] = useState(ENTITY_CONFIG[0].key);
   const [status, setStatus] = useState('Press "Run All Required GET Calls" to load all required data checks.');
@@ -233,24 +297,23 @@ function App() {
     [activeTab]
   );
 
-  const baseUrl = useMemo(() => `http://localhost:${servicePort}`, [servicePort]);
-
   function toggleConnectionSettings() {
-    setPortDraft(servicePort);
+    setConnectionDraft(baseUrl);
     setShowConnectionSettings((prev) => !prev);
   }
 
-  function savePort() {
-    const parsedPort = Number(portDraft);
-    if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
-      setStatus('Please enter a valid port number between 1 and 65535.');
+  function saveConnection() {
+    const parsedConnection = parseConnectionInput(connectionDraft);
+    if (!parsedConnection.isValid) {
+      setStatus(parsedConnection.message);
       return;
     }
 
-    const newPort = String(parsedPort);
-    setServicePort(newPort);
+    const nextBaseUrl = parsedConnection.baseUrl;
+    setBaseUrl(nextBaseUrl);
+    setConnectionDraft(nextBaseUrl);
     setShowConnectionSettings(false);
-    setStatus(`Connection updated. Using local service on port ${newPort}.`);
+    setStatus(`Connection updated. Using ${describeConnection(nextBaseUrl)}.`);
   }
 
   async function fetchJson(url) {
@@ -258,7 +321,7 @@ function App() {
     try {
       response = await fetch(url);
     } catch {
-      throw new Error('Network error: could not reach the local service. Confirm Spring Boot is running and the selected port is correct.');
+      throw new Error(`Network error: could not reach ${baseUrl}. Confirm the Spring Boot service is running and this connection value is correct.`);
     }
     let data = null;
     try {
@@ -467,22 +530,22 @@ function App() {
           </button>
         </div>
 
-        <p className="hint">Current connection: Local service on port {servicePort}.</p>
+        <p className="hint">Current connection: {describeConnection(baseUrl)}.</p>
 
         {showConnectionSettings && (
           <div className="connection-panel" aria-label="Connection settings">
-            <label className="field" htmlFor="servicePort">
-              <span>Local Service Port</span>
+            <label className="field" htmlFor="serviceConnection">
+              <span>Service URL or Local Port</span>
               <input
-                id="servicePort"
-                type="number"
-                min="1"
-                max="65535"
-                value={portDraft}
-                onChange={(event) => setPortDraft(event.target.value)}
+                id="serviceConnection"
+                type="text"
+                placeholder="8080 or https://your-service.up.railway.app"
+                value={connectionDraft}
+                onChange={(event) => setConnectionDraft(event.target.value)}
               />
             </label>
-            <button onClick={savePort}>Save Port</button>
+            <p className="hint">Use a port such as 8080 for local development, or a full service URL for a hosted backend. Do not include /api.</p>
+            <button onClick={saveConnection}>Save Connection</button>
           </div>
         )}
 

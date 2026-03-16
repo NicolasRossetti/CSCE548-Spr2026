@@ -1,93 +1,83 @@
 # Bazaar Tracker
 
-This project now includes:
-- A **data layer** (`BazaarDAO`) from Project 1
-- A **business layer** (`BazaarBusinessService`, `BazaarBusinessServiceImpl`)
-- A **service layer** (REST endpoints for all entities)
-- A **console front end** (`ServiceConsoleClient`) that invokes the services
+A full-stack Hypixel Skyblock Bazaar tracking application. The backend is a Spring Boot REST service backed by MySQL. The frontend is a React + Vite single-page application. Both can be run locally or deployed to a cloud platform.
 
-All CRUD operations in the data layer are exposed through the business layer and then through the REST service layer.
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Java 17, Spring Boot 3.5, Maven |
+| Database | MySQL 8.x, JDBC |
+| Frontend | React 18, Vite 5, Node.js 18+ |
+| Cloud hosting | Railway (backend + DB), Netlify / Vercel (frontend) |
 
 ## Architecture
 
-1. **Data layer**: direct JDBC CRUD in `BazaarDAO`
-2. **Business layer**: wraps DAO calls and centralizes exception handling
-3. **Service layer**: REST APIs under `/api/*`
-4. **Console client**: performs create → read → update → read → delete flow via HTTP for all entities
+```
+React SPA (client/)
+    └─▶ REST API  /api/*  (Spring Boot)
+            └─▶ Business layer  (BazaarBusinessServiceImpl)
+                    └─▶ Data layer  (BazaarDAO → MySQL)
+```
 
-## Service Endpoints
+## Prerequisites
 
-Each entity has full CRUD endpoints:
+Install these before you start:
 
-- `items`
-   - `POST /api/items`
-   - `GET /api/items/{id}`
-   - `GET /api/items`
-   - `GET /api/items?limit={n}` (subset)
-   - `PUT /api/items/{id}`
-   - `DELETE /api/items/{id}`
+- **Java 17** JDK
+- **Maven 3.9+**
+- **Node.js 18+** and **npm 9+**
+- **MySQL Server 8.x** and a MySQL client (e.g. MySQL Workbench, DBeaver, or the `mysql` CLI)
+- **PowerShell 7+** (`pwsh`) — only needed for the automated system test script
 
-- `price-snapshots`
-   - `POST /api/price-snapshots`
-   - `GET /api/price-snapshots/{id}`
-   - `GET /api/price-snapshots`
-   - `GET /api/price-snapshots?limit={n}` (subset)
-   - `PUT /api/price-snapshots/{id}`
-   - `DELETE /api/price-snapshots/{id}`
+## Quick Start (Local)
 
-- `orders`
-   - `POST /api/orders`
-   - `GET /api/orders/{id}`
-   - `GET /api/orders`
-   - `GET /api/orders?limit={n}` (subset)
-   - `PUT /api/orders/{id}`
-   - `DELETE /api/orders/{id}`
+### 1. Clone the repository
 
-- `trades`
-   - `POST /api/trades`
-   - `GET /api/trades/{id}`
-   - `GET /api/trades`
-   - `GET /api/trades?limit={n}` (subset)
-   - `PUT /api/trades/{id}`
-   - `DELETE /api/trades/{id}`
+```bash
+git clone https://github.com/NicolasRossetti/CSCE548-Spr2026.git
+cd CSCE548-Spr2026
+```
 
-- `notes`
-   - `POST /api/notes`
-   - `GET /api/notes/{id}`
-   - `GET /api/notes`
-   - `GET /api/notes?limit={n}` (subset)
-   - `PUT /api/notes/{id}`
-   - `DELETE /api/notes/{id}`
-
-## Local Setup
-
-### 1) Database
+### 2. Create the database and load sample data
 
 ```powershell
 mysql -u root -p < sql/schema.sql
 mysql -u root -p < sql/test_data.sql
 ```
 
-### 2) Configure environment variables
+This creates the `bazaar_tracker` database with five tables (`items`, `price_snapshots`, `orders`, `trades`, `notes`) and loads starter records.
+
+### 3. Set backend environment variables
 
 ```powershell
-$env:BAZAAR_DB_URL="jdbc:mysql://localhost:3306/bazaar_tracker"
-$env:BAZAAR_DB_USERNAME="root"
-$env:BAZAAR_DB_PASSWORD="your_password"
+$env:BAZAAR_DB_URL      = "jdbc:mysql://localhost:3306/bazaar_tracker"
+$env:BAZAAR_DB_USERNAME = "root"
+$env:BAZAAR_DB_PASSWORD = "your_mysql_password"
 ```
 
-### 3) Build and run service
+If your MySQL installation requires extra JDBC options:
+
+```powershell
+$env:BAZAAR_DB_URL = "jdbc:mysql://localhost:3306/bazaar_tracker?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+```
+
+### 4. Build and run the backend
 
 ```powershell
 mvn clean package
 mvn spring-boot:run
 ```
 
-Service base URL (local): `http://localhost:8080`
+The service starts at `http://localhost:8080`. Verify it with:
 
-### 4) Run the web client (React)
+```powershell
+Invoke-RestMethod http://localhost:8080/api/items
+```
 
-From a second terminal:
+### 5. Run the frontend
+
+Open a second terminal:
 
 ```powershell
 cd client
@@ -95,91 +85,119 @@ npm install
 npm run dev
 ```
 
-Web client URL (local): `http://localhost:5173`
+The React client starts at `http://localhost:5173`.
 
-The page includes 5 sections/tabs (Items, Price Snapshots, Orders, Trades, Notes) and supports:
-- `GET all`
-- `GET by id`
-- `GET subset` via `?limit=`
+Open that URL in your browser, then click **Run All Required GET Calls** to confirm the frontend can reach all five entity endpoints.
 
-Use **Run All Required GET Calls** in the UI to automatically execute all GET calls for all tables.
+## Configuration Reference
 
-## Console Front End Test
+### Backend (`application.properties` / environment variables)
 
-Run the console client while the service is running:
+| Variable | Default | Description |
+|---|---|---|
+| `BAZAAR_DB_URL` | `jdbc:mysql://localhost:3306/bazaar_tracker` | JDBC connection string |
+| `BAZAAR_DB_USERNAME` | `root` | Database username |
+| `BAZAAR_DB_PASSWORD` | `changeme` | Database password |
+| `BAZAAR_CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Comma-separated allowed frontend origins |
+| `PORT` | `8080` | HTTP port (auto-set by Railway) |
+
+### Frontend (optional `.env.local` in `client/`)
+
+Copy `client/.env.example` to `client/.env.local` to pre-set the backend target at build time:
+
+```text
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+The connection panel in the UI also lets you change the target at runtime — enter a port number (e.g. `8080`) for local use or a full URL for a hosted backend.
+
+## API Endpoints
+
+All five entities share the same CRUD pattern:
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/{entity}` | Create a record |
+| `GET` | `/api/{entity}` | Get all records |
+| `GET` | `/api/{entity}?limit={n}` | Get a subset |
+| `GET` | `/api/{entity}/{id}` | Get one record |
+| `PUT` | `/api/{entity}/{id}` | Update a record |
+| `DELETE` | `/api/{entity}/{id}` | Delete a record |
+
+Entities: `items`, `price-snapshots`, `orders`, `trades`, `notes`
+
+## Verification
+
+### Console CRUD client
+
+Runs a full create → read → update → read → delete flow for every entity and asserts `404` after each delete:
 
 ```powershell
 mvn exec:java -Dexec.mainClass=com.bazaar.ServiceConsoleClient
 ```
 
-This executes complete CRUD workflows against the API for:
-1. Item
-2. Price Snapshot
-3. Order
-4. Trade
-5. Note
-
-For each entity, it performs create, get, update, get, delete, and then verifies `404` after delete.
-
-## Console-Based Front End
-
-The console front end is implemented in:
-- `src/main/java/com/bazaar/ServiceConsoleClient.java`
-
-This program invokes the service layer over HTTP and performs a complete verification flow across all services:
-1. Insert object
-2. Get object
-3. Update object
-4. Get updated object
-5. Delete object
-6. Get after delete to verify `404`
-
-Run it with:
+Point it at a hosted backend with:
 
 ```powershell
+$env:BAZAAR_API_URL = "https://your-backend.up.railway.app/api"
 mvn exec:java -Dexec.mainClass=com.bazaar.ServiceConsoleClient
 ```
 
-If your service is hosted on Railway, set:
+### Automated PowerShell system test
+
+Requires PowerShell 7 (`pwsh`):
 
 ```powershell
-$env:BAZAAR_API_URL="https://your-railway-url"
+pwsh ./scripts/project4_system_test.ps1
 ```
 
-## Railway Hosting
+Writes a JSON results artifact to `artifacts/`. Use `-SkipDelete` to leave created rows in the database for manual inspection via `sql/project4_verification_queries.sql`.
 
-Platform selected: **Railway**
+## Cloud Deployment
 
-1. Push project to GitHub.
-2. Create a new Railway project from that repo.
-3. Set environment variables in Railway:
-    - `BAZAAR_DB_URL`
-    - `BAZAAR_DB_USERNAME`
-    - `BAZAAR_DB_PASSWORD`
+### Backend — Railway
+
+1. Push the repository to GitHub and connect it to a new Railway project.
+2. Add a **MySQL** service plugin to the Railway project.
+3. Set these environment variables on the Java service:
+
+   | Variable | Value |
+   |---|---|
+   | `BAZAAR_DB_URL` | `jdbc:mysql://mysql.railway.internal:3306/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC` |
+   | `BAZAAR_DB_USERNAME` | *(from Railway MySQL credentials)* |
+   | `BAZAAR_DB_PASSWORD` | *(from Railway MySQL credentials)* |
+   | `BAZAAR_CORS_ALLOWED_ORIGINS` | your hosted frontend URL + `,http://localhost:5173` |
+
 4. Build command: `mvn clean package`
 5. Start command: `java -jar target/bazaar-tracker-1.0.0.jar`
-6. Use generated Railway URL as service host.
+6. After the first deploy, connect to the Railway MySQL service and run `sql/schema.sql` and `sql/test_data.sql` to initialize the database.
 
-Hosting comments are also embedded in:
-- `BazaarServiceApplication.java`
-- `ServiceConsoleClient.java`
+### Frontend — Netlify / Vercel
 
-## Testing and Screenshot Checklist
+| Setting | Value |
+|---|---|
+| Root / base directory | `client` |
+| Build command | `npm run build` |
+| Publish / output directory | `dist` |
+| Environment variable | `VITE_API_BASE_URL=https://your-backend.up.railway.app` |
 
-Capture screenshots for the following:
+## Project Structure
 
-1. Spring service startup logs (`mvn spring-boot:run`)
-2. React client running at `http://localhost:5173`
-3. Click on **Run All Required GET Calls** and capture the **Run-All Execution Log** showing:
-   - Items: `GET /api/items`, `GET /api/items/{id}`, `GET /api/items?limit=2`
-   - Price Snapshots: `GET /api/price-snapshots`, `GET /api/price-snapshots/{id}`, `GET /api/price-snapshots?limit=2`
-   - Orders: `GET /api/orders`, `GET /api/orders/{id}`, `GET /api/orders?limit=2`
-   - Trades: `GET /api/trades`, `GET /api/trades/{id}`, `GET /api/trades?limit=2`
-   - Notes: `GET /api/notes`, `GET /api/notes/{id}`, `GET /api/notes?limit=2`
-4. At least one screenshot per tab showing returned JSON data in the output panel.
-
-## Notes
-
-- Existing Project 1 DAO and model classes were reused.
-- The older console app (`BazaarConsoleApp`) remains in the project.
-- The React website client in `client/` provides a simple interface for validating service-layer GET functionality.
+```
+CSCE548-Spr2026/
+├── client/                      # React + Vite frontend
+│   ├── src/App.jsx              # Single-page application
+│   └── .env.example             # Frontend env template
+├── sql/
+│   ├── schema.sql               # Database + table definitions
+│   ├── test_data.sql            # Starter records
+│   └── project4_verification_queries.sql
+├── scripts/
+│   └── project4_system_test.ps1 # End-to-end PowerShell test
+├── src/main/java/com/bazaar/
+│   ├── api/                     # REST controllers
+│   ├── business/                # Business service layer
+│   ├── dao/                     # JDBC data access layer
+│   └── model/                   # Entity model classes
+└── pom.xml                      # Maven build file
+```
